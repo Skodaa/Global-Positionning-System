@@ -4,9 +4,13 @@ package engine.map;
 
 import java.util.ArrayList;
 
+import engine.config.GPSConfiguration;
 import engine.imageIn.Image;
+import engine.item.Rail;
 import engine.item.Road;
+import engine.item.StationTrain;
 import engine.item.Water;
+import engine.process.CSVReader;
 
 
 public class Map {
@@ -26,6 +30,12 @@ public class Map {
 				
 			}
 		}
+		CSVReader cr = new CSVReader(GPSConfiguration.GARES_CSV);
+		ArrayList<String[]> gares = cr.recupPoint();
+		for(String[] gare : gares) {
+			StationTrain st = new StationTrain(gare[0],Integer.parseInt(gare[1]),Integer.parseInt(gare[2]));
+			map[Integer.parseInt(gare[1])][Integer.parseInt(gare[2])].appendNewIP(st);
+		}
 	}
 	
 	public void attributClasse(Case currentCase,Image image,int i,int j) {
@@ -33,49 +43,41 @@ public class Map {
 			currentCase.appendNewIP(new Water());
 		}
 		else if((image.getPixel(i, j).getRouge()==255)&&image.getPixel(i, j).getVert()==255){
-			Road road = new Road("city");
+			Road road = new Road("ville");
+			currentCase.appendNewIP(road);
+		}
+		else if((image.getPixel(i, j).getRouge()==255)&&image.getPixel(i, j).getVert()==127){
+			Road road = new Road("campagne");
 			currentCase.appendNewIP(road);
 		}
 		
+		else if(((image.getPixel(i, j).getRouge()==255)&&(image.getPixel(i, j).getVert()==0))&&(image.getPixel(i, j).getBleu()==0)){
+			Road road = new Road("campagne");
+			currentCase.appendNewIP(road);
+			currentCase.appendNewIP(new Rail());
+		}
+		else if(((image.getPixel(i, j).getRouge()==0)&&(image.getPixel(i, j).getVert()==255))&&(image.getPixel(i, j).getBleu()==0)){
+			currentCase.appendNewIP(new Rail());
+		}
+		
 	}
 	
-	public int testDist(Case depart,Case arrive,int count,int rep) {
-		int xi = depart.getColonne();
-		int yi = depart.getLigne();
-		
-		int xa = arrive.getColonne();
-		int ya = arrive.getLigne();
-		
-		int sousx = xa -xi;
-		sousx = Math.abs(sousx);
-		int sousy = ya -yi;
-		sousy = Math.abs(sousy);
-		
-		
-		ArrayList<Case> adja = caseAdjacente(depart);
-		for(int i = 0;i<adja.size();i++) {
-			if(adja.get(i)==arrive) {
-				return count + 1;
-			}
-			if((Math.abs((xa - adja.get(i).getColonne()))<sousx)||(Math.abs((ya - adja.get(i).getLigne()))<sousy)){
-				count = testDist(adja.get(i),arrive,count+1,rep);
-				if((rep == 0)||(count < rep)) {
-					rep = count;
+	
+	public int estIntersection(Case before,Case block,boolean train) {
+		if(block.haveChemin()==1) {
+			if(block.haveRail()==1&&block.haveStationTrain()==0) {
+				return 0;
+				}
+				else {
+				ArrayList<Case> adja = caseAdjacente(before,block,train);
+				if(adja.size()>2) {
+					return 1;
+				}
+				else {
+					return 0;
 				}
 			}
-		}
-		return rep;
-	}
-	
-	public int estIntersection(Case block) {
-		if(block.haveRoad()==1) {
-			ArrayList<Case> adja = caseAdjacente(block);
-			if(adja.size()>2) {
-				return 1;
-			}
-			else {
-				return 0;
-			}
+			
 		}
 		else {
 			return -1;
@@ -86,37 +88,114 @@ public class Map {
 		return map;
 	}
 	
-	public ArrayList<Case> caseAdjacente(Case caseuh){
+	public ArrayList<Case> caseAdjacente(Case before,Case caseuh, boolean train){
 		ArrayList<Case> route = new ArrayList<Case>(); 
-		
-		int i = 0;
-		int j = -1;
-		if ((map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1)) {
-			route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+		if(train) {
+			int i = 0;
+			int j = -1;
+			
+			if(testCaseTrain(i,j,before,caseuh)) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			
+			i = -1;
+			j = 0;
+			if(testCaseTrain(i,j,before,caseuh)) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			
+			
+			i = 1;
+			j = 0;
+			if(testCaseTrain(i,j,before,caseuh)) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			
+			i = 0;
+			j = 1;
+			if(testCaseTrain(i,j,before,caseuh)) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
 		}
-		
-		i = -1;
-		j = 0;
-		if ((map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1)) {
-			route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+		else {
+			 int i = 0;
+			 int j = -1;
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			 i = -1;
+			 j = 0;
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			 i = 1;
+			 j = 0;
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
+			 i = 0;
+			 j = 1;
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+				route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
+			}
 		}
-		
-		i = 1;
-		j = 0;
-		if ((map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1)) {
-			route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
-		}
-		
-		i = 0;
-		j = 1;
-		
-		if ((map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1)) {
-			route.add(map[caseuh.getColonne()+i][caseuh.getLigne()+j]);
-		}
-	
 		
 		return route;
 	}
+	
+	public boolean testCaseTrain(int i, int j,Case before,Case caseuh) {
+		if (caseuh.haveRail()==1&&caseuh.haveRoad()==0) {
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRail()==1) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else if(caseuh.haveRoad()==1&&caseuh.haveRail()==0) {
+			if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+		else if(caseuh.haveRoad()==1&&caseuh.haveRail()==1) {
+			if(caseuh.haveStationTrain()==1) {
+				if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1||map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRail()==1) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+			else {
+				if(before.haveRail()==1&&before.haveRoad()==0) {
+					if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRail()==1) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+				else if(before.haveRail()==0&&before.haveRoad()==1) {
+					if(map[caseuh.getColonne()+i][caseuh.getLigne()+j].haveRoad()==1) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+				else {
+					return false;
+				}
+			}
+		}
+		else {
+			return false;
+		}
+	}
+	
 	
 	public Case getCase(int x,int y) {
 		return map[x][y];

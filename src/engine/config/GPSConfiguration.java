@@ -7,4 +7,6 @@ public class GPSConfiguration {
 	public static final int BLOCK_SIZE = 5;
 	
 	public static final String MAP_EMPLACEMENT = "C:\\Users\\avvol\\OneDrive\\Desktop\\oui.png";
+	public static final String GARES_CSV = "src/engine/config/gares.csv";
+	public static final String LIEU_CSV = "src/engine/config/lieu.csv";
 }

@@ -2,11 +2,12 @@ package engine.map;
 
 import java.util.ArrayList;
 
-import engine.item.InterestPoint;
+import engine.item.Chemin;
+import engine.item.ElementCarte;
 
 public class Case {
 	private int num;
-	private ArrayList<InterestPoint> it = new ArrayList<InterestPoint>();
+	private ArrayList<ElementCarte> it = new ArrayList<ElementCarte>();
 	private int colonne;
 	private int ligne;
 	
@@ -15,12 +16,6 @@ public class Case {
 		this.colonne = colonne;
 		this.ligne = ligne;
 	}
-	
-	/*public Case(int num,int colonne,) {
-		this.num = num;
-		this.colonne = colonne;
-		this.ligne = ligne;
-	}*/
 	
 	public int getNum() {
 		return num;
@@ -38,29 +33,64 @@ public class Case {
 		this.num = num;
 	}
 	
-	public ArrayList<InterestPoint> getInterest(){
+	public ArrayList<ElementCarte> getInterest(){
 		return it;
 	}
 	
 	public int haveRoad() {
-		for(InterestPoint i : it) {
-			if(i.getName()=="road") {
+		for(ElementCarte i : it) {
+			if(i.estChemin()==1) {
+				Chemin ch = (Chemin)i;
+				if(ch.getName()=="road") {
+					return 1;
+				}
+			}
+		}
+		return 0 ;
+	}
+	
+	public int haveStationTrain() {
+		for(ElementCarte i : it) {
+			if(i.getType()=="stationTrain") {
 				return 1;
+			}
+		}
+		return 0 ;
+	}
+	
+	public int haveChemin() {
+		for(ElementCarte i : it) {
+			if(i.estChemin()==1) {
+				return 1;
+			}
+		}
+		return 0 ;
+	}
+	
+	public int haveRail() {
+		for(ElementCarte i : it) {
+			if(i.estChemin()==1) {
+				Chemin ch = (Chemin)i;
+				if(ch.getName()=="rail") {
+					return 1;
+				}
 			}
 		}
 		return 0 ;
 	}
 	
 	public int haveWater() {
-		for(InterestPoint i : it) {
-			if(i.getName()=="water") {
+		for(ElementCarte i : it) {
+			if(i.estEau()==1) {
 				return 1;
 			}
 		}
 		return 0 ;
 	}
 	
-	public void appendNewIP(InterestPoint ip) {
+	
+	
+	public void appendNewIP(ElementCarte ip) {
 		it.add(ip);
 	}
 }

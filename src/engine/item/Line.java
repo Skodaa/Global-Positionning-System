@@ -12,7 +12,7 @@ public abstract class Line {
 	private int prix;
 	private int vitesse;
 	private String horaire; // temps entre chaque moyen de transport
-	private HashMap<String, Station> ligne;
+	private HashMap<String, StationTrain> ligne;
 	
 	public Line(String number, String confort, int prix, int vitesse, String horaire) {
 		this.number = number;
@@ -20,7 +20,7 @@ public abstract class Line {
 		this.prix = prix;
 		this.vitesse = vitesse;
 		this.horaire = horaire;
-		this.ligne = new HashMap<String, Station>();
+		this.ligne = new HashMap<String, StationTrain>();
 	}
 	
 	public String getNumber() {
@@ -39,14 +39,14 @@ public abstract class Line {
 	public String getHoraire() {
 		return horaire;
 	}
-	public HashMap<String, Station> getLigne() {
+	public HashMap<String, StationTrain> getLigne() {
 		return ligne;
 	}
 	
-	public Station getStation(String name) throws NotFoundException{
-		Station station = null;
-		Collection<Station> values = ligne.values();
-		for(Station st : values) {
+	public StationTrain getStation(String name) throws NotFoundException{
+		StationTrain station = null;
+		Collection<StationTrain> values = ligne.values();
+		for(StationTrain st : values) {
 			if(st.getName() == name) {
 				station = st;
 			}

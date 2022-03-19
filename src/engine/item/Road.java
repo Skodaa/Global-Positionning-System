@@ -1,20 +1,25 @@
 package engine.item;
 
-public class Road extends InterestPoint {
-	private String type;
+public class Road extends Chemin {
+	private String typeChemin;
 	private int speedLimit;
 	
 	public Road(String type) {
 		super("road");
-		this.type = type;
-		this.speedLimit = 50;
+		this.typeChemin = type;
+		if(type == "ville") {
+			this.speedLimit = 50;
+		}
+		else if(type == "campagne") {
+			this.speedLimit = 300;
+		}
 	}
 	
-	public String getType() {
-		return type;
+	public String getTypeChemin() {
+		return typeChemin;
 	}
 	
-	public int getSpeedLimit() {
+	public int getSpeed() {
 		return speedLimit;
 	}
 	

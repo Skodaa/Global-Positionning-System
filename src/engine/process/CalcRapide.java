@@ -2,28 +2,39 @@ package engine.process;
 
 import java.util.ArrayList;
 
+import engine.item.Chemin;
+import engine.item.ElementCarte;
+import engine.item.Road;
 import engine.map.Case;
 import engine.map.Map;
 
-public class CalculeDistance {
+
+
+public class CalcRapide {
 	
 	private Case depart;
 	private Case arrive;
 	private int count;
+	private float tempCount;
 	private int rep;
+	private float tempFinal;
 	private Map map;
 	private ArrayList<Integer> pileCount;
+	private ArrayList<Float> pileTempCount;
 	private ArrayList<Case> chemin;
 	private ArrayList<Case> cheminFinal;
 	private boolean train;
 	
-	public CalculeDistance(Map map,Case depart,Case arrive,boolean train) {
+	public CalcRapide(Map map,Case depart,Case arrive,boolean train) {
 		this.map = map;
 		this.depart = depart;
 		this.arrive = arrive;
 		this.rep = 0;
 		this.count =0;
+		this.tempCount = 0;
+		this.tempFinal=0;
 		this.pileCount = new ArrayList<Integer>();
+		this.pileTempCount = new ArrayList<Float>();
 		this.chemin = new ArrayList<Case>();
 		this.cheminFinal = new ArrayList<Case>();
 		this.train = train;
@@ -42,34 +53,36 @@ public class CalculeDistance {
 		sousx = Math.abs(sousx);
 		int sousy = ya -yi;
 		sousy = Math.abs(sousy);
-		System.out.println(count);
+		//System.out.println(count);
 		
 		if(map.estIntersection(after,current,train)==1) {
-			System.out.println("intesection, on empile la valeur Count, et on la reinitialise");
+			//System.out.println("intesection, on empile la valeur Count, et on la reinitialise");
 			pileCount.add(count);
+			pileTempCount.add(tempCount);
 			count = 0;
-			affichePile();
+			tempCount=0;
 		}
 		
 		ArrayList<Case> adja = map.caseAdjacente(after,current,train);
 		System.out.println(" case : " +current.getColonne()+"," +current.getLigne());
 		for(int d=0;d<adja.size();d++) {
-			System.out.println(adja.get(d));
+			//System.out.println(adja.get(d));
 		}
 		
 		
 			
 		for(int i = 0;i<adja.size();i++) {
 			if(adja.get(i)==arrive) {
-				int temp = 0;
-				for(int a = 0;a<pileCount.size();a++) {
+				float temp = 0;
+				for(int a = 0;a<pileTempCount.size();a++) {
 					
-					 temp += pileCount.get(a);
+					 temp += pileTempCount.get(a);
 				}
-				temp = temp + count + 1;
+				temp = temp + tempCount;
 				System.out.println("Fin de la route, distance parcourue : "+ temp);
-				if((temp < rep)||(rep==0)) {
-					rep = temp;
+				if((temp < tempFinal)||(tempFinal==0)) {
+					rep = chemin.size();
+					tempFinal = temp;
 					if(cheminFinal.size()!=0) {
 						cheminFinal.clear();
 					}
@@ -80,46 +93,63 @@ public class CalculeDistance {
 			}
 			else if((adja.get(i)!=after)){
 				if(!chemin.contains(adja.get(i))) {
-					int temp2 = 0;
-					for(int a = 0;a<pileCount.size();a++) {
+					
+					float temp2 = 0;
+					for(int a = 0;a<pileTempCount.size();a++) {
 						
-						 temp2 += pileCount.get(a);
+						 temp2 += pileTempCount.get(a);
 					}
-					temp2 = temp2 + count + 1;
-					if((temp2 < rep)||(rep == 0)) {
+					temp2 = temp2 + tempCount;
+					if((temp2 < tempFinal)||(tempFinal == 0)) {
 						chemin.add(current);
 						count = count + 1;
+						tempCount = tempCount + calculeTemp(current);
 						canContinue = 1;
 						rep = testDist(adja.get(i),current);
 					}
 				}
 			}
 			if((i == adja.size()-1)&&(map.estIntersection(after,current,train)==1)){
-				System.out.println("On depile la pile, car la route n'a rien donné");
+				//System.out.println("On depile la pile, car la route n'a rien donné");
 				for(int d=0;d<pileCount.get(pileCount.size()-1);d++){
 					chemin.remove(chemin.size()-1);
 				}
 				pileCount.remove(pileCount.size()-1);
-				affichePile();
+				pileTempCount.remove(pileTempCount.size()-1);
 			}
 		}
 		if(canContinue == 0) {
-			System.out.println("Compteur : " +count);
+			//System.out.println("Compteur : " +count);
 			for(int d=0;d<count;d++){
 				chemin.remove(chemin.size()-1);
 			}
 			count = 0;
+			tempCount = 0;
 			
 		}
 		
 		return rep;
 	}
 	
-	public void affichePile() {
-		System.out.println("Contenue de la pile :");
-		for(int i = 0; i < pileCount.size();i++) {
-			System.out.println(pileCount.get(i));
-		}
+	public float calculeTemp(Case emplacement) {
+		float temp = 0;
+		ArrayList<ElementCarte> it = emplacement.getInterest();
+			for(ElementCarte ec : it) {
+				if(ec.estChemin()==1) {
+					Chemin ch = (Chemin)ec;
+					if(ch.getName()=="road"){
+						temp =0.1f/ ch.getSpeed();
+					}
+					if(ch.getName()=="rail"){
+						temp =0.1f/ ch.getSpeed();
+					}
+				}
+			}
+		return temp*60;
+	}
+	
+	public float getTemp() {
+		return tempFinal;
 	}
 	
 	public Case getDepart() {
@@ -129,5 +159,4 @@ public class CalculeDistance {
 	public ArrayList<Case> getCheminFinal(){
 		return cheminFinal;
 	}
-	
 }

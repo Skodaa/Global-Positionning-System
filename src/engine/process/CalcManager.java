@@ -2,6 +2,8 @@
 
 import java.util.ArrayList;
 
+import engine.config.GPSConfiguration;
+import engine.item.Lieu;
 import engine.map.Case;
 import engine.map.Map;
 
@@ -11,6 +13,8 @@ public class CalcManager {
 	
 	private int distance;
 	private CalculeDistance calc;
+	private CalcRapide calcTemp;
+	private float temp;
 	
 	private String x1;
 	private String y1;
@@ -22,22 +26,47 @@ public class CalcManager {
 		this.map = map;
 	}
 	
-	public void calcLowerTraject() {
-		calc = new CalculeDistance(map,map.getCase(Integer.parseInt(x1), Integer.parseInt(y1)),map.getCase(Integer.parseInt(x2), Integer.parseInt(y2)));
+	public void calcLowerTraject(boolean train) {
+		calc = new CalculeDistance(map,map.getCase(Integer.parseInt(x1), Integer.parseInt(y1)),map.getCase(Integer.parseInt(x2), Integer.parseInt(y2)),train);
 		distance = calc.testDist(calc.getDepart(),null);
+	}
+	
+	public void calcTempTraject(boolean train) {
+		calcTemp = new CalcRapide(map,map.getCase(Integer.parseInt(x1), Integer.parseInt(y1)),map.getCase(Integer.parseInt(x2), Integer.parseInt(y2)),train);
+		distance = calcTemp.testDist(calcTemp.getDepart(),null);
+		temp = calcTemp.getTemp();
 	}
 	
 	public int getDistance() {
 		return distance;
 	}
 	
+	public float getTemp() {
+		return temp;
+	}
+	
 	public ArrayList<Case> getChemin(){
 		if(calc!=null) {
 			return calc.getCheminFinal();
 		}
+		else if(calcTemp!=null){
+			return calcTemp.getCheminFinal();
+		}
 		else {
 			return null;
 		}
+	}
+	
+	public ArrayList<Lieu> getLieu() {
+		CSVReader cr = new CSVReader(GPSConfiguration.LIEU_CSV);
+		ArrayList<String[]> lieux = cr.recupPoint();
+		ArrayList<Lieu> out = new ArrayList<Lieu>();
+		for(String[] lieu : lieux) {
+			Lieu st = new Lieu(lieu[0],lieu[1],lieu[2]);
+			out.add(st);
+		}
+		return out;
+		
 	}
 	
 	public String getX1() {
@@ -71,4 +100,7 @@ public class CalcManager {
 	public void setY2(String y2) {
 		this.y2 = y2;
 	}
+	
+	
+	
 }
