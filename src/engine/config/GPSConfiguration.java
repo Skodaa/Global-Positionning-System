@@ -6,5 +6,5 @@ public class GPSConfiguration {
 	
 	public static final int BLOCK_SIZE = 5;
 	
-	public static final String MAP_EMPLACEMENT = "C:\\Users\\Matthieu\\OneDrive\\Bureau\\map.png";
+	public static final String MAP_EMPLACEMENT = "C:\\Users\\avvol\\OneDrive\\Desktop\\oui.png";
 }
