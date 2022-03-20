@@ -57,17 +57,6 @@ public class CalcManager {
 		}
 	}
 	
-	public ArrayList<Lieu> getLieu() {
-		CSVReader cr = new CSVReader(GPSConfiguration.LIEU_CSV);
-		ArrayList<String[]> lieux = cr.recupPoint();
-		ArrayList<Lieu> out = new ArrayList<Lieu>();
-		for(String[] lieu : lieux) {
-			Lieu st = new Lieu(lieu[0],lieu[1],lieu[2]);
-			out.add(st);
-		}
-		return out;
-		
-	}
 	
 	public String getX1() {
 		return x1;

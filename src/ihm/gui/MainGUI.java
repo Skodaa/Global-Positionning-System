@@ -30,6 +30,7 @@ import javax.swing.filechooser.FileSystemView;
 import engine.config.GPSConfiguration;
 import engine.item.Lieu;
 import engine.map.Map;
+import engine.process.CSVReader;
 import engine.process.CalcManager;
 import engine.process.GPSBuilder;
 
@@ -59,7 +60,8 @@ public class MainGUI extends JFrame implements Runnable {
 	private JMenu transportSubMenu;
 	
 	private CalcManager manager = new CalcManager(map);
-	private ArrayList<Lieu> lieux = manager.getLieu();
+	private CSVReader csv = new CSVReader(GPSConfiguration.LIEU_CSV);
+	private ArrayList<Lieu> lieux = csv.getLieu();
 	private DefaultListModel<String> model;
 	private JList<String> startL;
 	private JList<String> endL;
