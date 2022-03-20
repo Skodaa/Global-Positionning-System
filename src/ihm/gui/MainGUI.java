@@ -46,12 +46,32 @@ public class MainGUI extends JFrame implements Runnable {
 	private Map map;
 	private DisplayMap carte;
 	
-	private CalcManager manager;
-	private CalcManager cm = new CalcManager(map);
-	private ArrayList<Lieu> lieux = cm.getLieu();
-	private Lieu start;
-	private Lieu finish;
+	private JMenuBar menuBar;
+	private JMenu fileMenu;
+	private JMenu itineraireMenu;
+	private JMenu startSubMenu;
+	private JMenu startLabel;
+	private JTextField startFieldX;
+	private JTextField startFieldY;
+	private JMenu finishLabel;
+	private JTextField finishFieldX;
+	private JTextField finishFieldY;
+	private JMenu transportSubMenu;
 	
+	private CalcManager manager = new CalcManager(map);
+	private ArrayList<Lieu> lieux = manager.getLieu();
+	private DefaultListModel<String> model;
+	private JList<String> startL;
+	private JList<String> endL;
+	private JCheckBoxMenuItem busBox;
+	private JCheckBoxMenuItem trainBox; 
+	private JCheckBoxMenuItem boatBox; 
+	private JMenu tripSubMenu;
+	private JCheckBoxMenuItem shortBox;
+	private JCheckBoxMenuItem longBox;
+	private JCheckBoxMenuItem confortBox;
+	private JCheckBoxMenuItem touristicBox;
+	private JButton saveButton;
 	private JLabel distanceJLabel = new JLabel("");
 	
 	
@@ -92,79 +112,53 @@ public class MainGUI extends JFrame implements Runnable {
 	}
 	
 	private void createMenuBar() {
-		JMenuBar menuBar = new JMenuBar();
+		menuBar = new JMenuBar();
 		
-		JMenu fileMenu = new JMenu("File");
+		fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
 		fileMenu.addMenuListener(new fileOperations());
 		
-		JMenu itineraireMenu = new JMenu("Paramètres itinéraire");
+		itineraireMenu = new JMenu("Paramètres itinéraire");
 		
-		JMenu startSubMenu = new JMenu("Départ/Arrivée");
-		JMenu startLabel = new JMenu("Point de départ :");
-		JTextField startFieldX = new JTextField();
+		startSubMenu = new JMenu("Départ/Arrivée");
+		startLabel = new JMenu("Point de départ :");
+		startFieldX = new JTextField();
 		startFieldX.setPreferredSize(fieldMenuSize);
-		JTextField startFieldY = new JTextField();
+		startFieldY = new JTextField();
 		startFieldY.setPreferredSize(fieldMenuSize);
-		DefaultListModel<String> model = new DefaultListModel<String>();
+		model = new DefaultListModel<String>();
 		for(int i = 0; i < lieux.size(); i++) {
 			model.add(i,lieux.get(i).getName());
 		}
 		
-		JList<String> startL = new JList<String>(model);
-		startL.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				String SelectedS = startL.getSelectedValue();
-				for(Lieu lieu : lieux) {
-					if(lieu.getName()== SelectedS) {
-						
-						String xs = lieu.getX();
-						String ys = lieu.getY();
-						startFieldX.setText(xs);
-						startFieldY.setText(ys);
-					}
-				}
-			}
-		});
+		startL = new JList<String>(model);
+		startL.addListSelectionListener(new ListSelectionOperation(1));
+		
 	
-		JMenu finishLabel = new JMenu("Point d'arrivée :");
-		JTextField finishFieldX = new JTextField();
+		finishLabel = new JMenu("Point d'arrivée :");
+		finishFieldX = new JTextField();
 		finishFieldX.setPreferredSize(fieldMenuSize);
-		JTextField finishFieldY = new JTextField();
+		finishFieldY = new JTextField();
 		finishFieldY.setPreferredSize(fieldMenuSize);
 		
 		
-		JList<String> endL = new JList<String>(model);
-		endL.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				String SelectedE = endL.getSelectedValue();
-				for(Lieu lieu2 : lieux) {
-					if(lieu2.getName()== SelectedE) {
-						
-						String xe = lieu2.getX();
-						String ye = lieu2.getY();
-						finishFieldX.setText(xe);
-						finishFieldY.setText(ye);
-					}
-				}
-			}
-		});
+		endL = new JList<String>(model);
+		endL.addListSelectionListener(new ListSelectionOperation(0));
+		
 
-		JMenu transportSubMenu = new JMenu("Type de transport");
-		JCheckBoxMenuItem busBox = new JCheckBoxMenuItem("Bus");
-		JCheckBoxMenuItem trainBox = new JCheckBoxMenuItem("Train");
-		JCheckBoxMenuItem boatBox = new JCheckBoxMenuItem("Bateau");
+		transportSubMenu = new JMenu("Type de transport");
+		busBox = new JCheckBoxMenuItem("Bus");
+		trainBox = new JCheckBoxMenuItem("Train");
+		boatBox = new JCheckBoxMenuItem("Bateau");
 		
-		JMenu tripSubMenu = new JMenu("Type de trajet");
-		JCheckBoxMenuItem shortBox = new JCheckBoxMenuItem("Plus Court");
-		JCheckBoxMenuItem longBox = new JCheckBoxMenuItem("Plus Rapide");
-		JCheckBoxMenuItem confortBox = new JCheckBoxMenuItem("Plus confortable");
-		JCheckBoxMenuItem touristicBox = new JCheckBoxMenuItem("Trajet touristique");
+		tripSubMenu = new JMenu("Type de trajet");
+		shortBox = new JCheckBoxMenuItem("Plus Court");
+		longBox = new JCheckBoxMenuItem("Plus Rapide");
+		confortBox = new JCheckBoxMenuItem("Plus confortable");
+		touristicBox = new JCheckBoxMenuItem("Trajet touristique");
 		
 		
-		JButton saveButton = new JButton("Enregistrer");
+		saveButton = new JButton("Enregistrer");
 		saveButton.addActionListener(new saveOperations(startFieldX,startFieldY,finishFieldX,finishFieldY,distanceJLabel));
 		
 		startSubMenu.add(startLabel);
@@ -194,6 +188,44 @@ public class MainGUI extends JFrame implements Runnable {
 		menuBar.add(itineraireMenu);
 		
 		setJMenuBar(menuBar);
+		
+	}
+	private class ListSelectionOperation implements ListSelectionListener{
+		private int type;
+		
+		
+		public ListSelectionOperation(int type) {
+			this.type = type;
+		}
+		
+		public void valueChanged(ListSelectionEvent e) {
+			
+			if(type == 1) {
+				String SelectedS = startL.getSelectedValue();
+				for(Lieu lieu : lieux) {
+					if(lieu.getName()== SelectedS) {
+						
+						String xs = lieu.getX();
+						String ys = lieu.getY();
+						startFieldX.setText(xs);
+						startFieldY.setText(ys);
+					}
+				}
+			}
+			else {
+				String SelectedE = endL.getSelectedValue();
+				for(Lieu lieu2 : lieux) {
+					if(lieu2.getName()== SelectedE) {
+						
+						String xe = lieu2.getX();
+						String ye = lieu2.getY();
+						finishFieldX.setText(xe);
+						finishFieldY.setText(ye);
+					}
+				}
+			}
+		}
+		
 		
 	}
 	
