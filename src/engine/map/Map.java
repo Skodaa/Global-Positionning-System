@@ -208,4 +208,28 @@ public class Map {
 	public int getHauteur() {
 		return hauteur;
 	}
+	
+	public boolean isOnTopBorder(Case position) {
+		int line = position.getLigne();
+		return line == 0;
+	}
+	
+	public boolean isOnBottomBorder(Case position) {
+		int line = position.getLigne();
+		return line == hauteur - 1;
+	}
+	
+	public boolean isOnRightBorder(Case position) {
+		int column = position.getColonne();
+		return column == 0;
+	}
+	
+	public boolean isOnLeftBorder(Case position) {
+		int column = position.getColonne();
+		return column == largeur - 1;
+	}
+	
+	public boolean isOnBorder(Case position) {
+		return isOnTopBorder(position) || isOnBottomBorder(position) || isOnRightBorder(position) || isOnLeftBorder(position);
+	}
 }

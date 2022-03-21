@@ -1,10 +1,12 @@
 package ihm.gui;
 
-import java.awt.BorderLayout; 
+import java.awt.BorderLayout;  
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +21,7 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
@@ -28,7 +31,9 @@ import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileSystemView;
 
 import engine.config.GPSConfiguration;
+import engine.exception.WrongParametersException;
 import engine.item.Lieu;
+import engine.map.Case;
 import engine.map.Map;
 import engine.process.CSVReader;
 import engine.process.CalcManager;
@@ -75,8 +80,8 @@ public class MainGUI extends JFrame implements Runnable {
 	private JCheckBoxMenuItem touristicBox;
 	private JButton saveButton;
 	private JLabel distanceJLabel = new JLabel("");
-	
-	
+	private Case start;
+	private Case finish;
 	
 	
 	public MainGUI(String title) {
@@ -106,6 +111,9 @@ public class MainGUI extends JFrame implements Runnable {
 		contentPane.add(distanceJLabel,BorderLayout.SOUTH);
 		distanceJLabel.setVisible(false);
 		
+		MouseControls mouseControls = new MouseControls();
+		carte.addMouseListener(mouseControls);
+		
 		pack();
 		setPreferredSize(preferredSize);
 		setResizable(false);
@@ -114,7 +122,7 @@ public class MainGUI extends JFrame implements Runnable {
 	}
 	
 	private void createMenuBar() {
-		menuBar = new JMenuBar();
+menuBar = new JMenuBar();
 		
 		fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
@@ -152,6 +160,7 @@ public class MainGUI extends JFrame implements Runnable {
 		busBox = new JCheckBoxMenuItem("Bus");
 		trainBox = new JCheckBoxMenuItem("Train");
 		boatBox = new JCheckBoxMenuItem("Bateau");
+		
 		
 		tripSubMenu = new JMenu("Type de trajet");
 		shortBox = new JCheckBoxMenuItem("Plus Court");
@@ -192,44 +201,6 @@ public class MainGUI extends JFrame implements Runnable {
 		setJMenuBar(menuBar);
 		
 	}
-	private class ListSelectionOperation implements ListSelectionListener{
-		private int type;
-		
-		
-		public ListSelectionOperation(int type) {
-			this.type = type;
-		}
-		
-		public void valueChanged(ListSelectionEvent e) {
-			
-			if(type == 1) {
-				String SelectedS = startL.getSelectedValue();
-				for(Lieu lieu : lieux) {
-					if(lieu.getName()== SelectedS) {
-						
-						String xs = lieu.getX();
-						String ys = lieu.getY();
-						startFieldX.setText(xs);
-						startFieldY.setText(ys);
-					}
-				}
-			}
-			else {
-				String SelectedE = endL.getSelectedValue();
-				for(Lieu lieu2 : lieux) {
-					if(lieu2.getName()== SelectedE) {
-						
-						String xe = lieu2.getX();
-						String ye = lieu2.getY();
-						finishFieldX.setText(xe);
-						finishFieldY.setText(ye);
-					}
-				}
-			}
-		}
-		
-		
-	}
 	
 	private class fileOperations implements MenuListener {
 
@@ -261,6 +232,47 @@ public class MainGUI extends JFrame implements Runnable {
 		}
 	}
 	
+	private class ListSelectionOperation implements ListSelectionListener{
+		private int type;
+		
+		
+		public ListSelectionOperation(int type) {
+			this.type = type;
+		}
+		
+		public void valueChanged(ListSelectionEvent e) {
+			
+			if(type == 1) {
+				String SelectedS = startL.getSelectedValue();
+				for(Lieu lieu : lieux) {
+					if(lieu.getName()== SelectedS) {
+						
+						String xs = lieu.getX();
+						String ys = lieu.getY();
+						startFieldX.setText(xs);
+						startFieldY.setText(ys);
+						
+					}
+				}
+			}
+			else {
+				String SelectedE = endL.getSelectedValue();
+				for(Lieu lieu2 : lieux) {
+					if(lieu2.getName()== SelectedE) {
+						
+						String xe = lieu2.getX();
+						String ye = lieu2.getY();
+						finishFieldX.setText(xe);
+						finishFieldY.setText(ye);
+						
+					}
+				}
+			}
+		}
+		
+		
+	}
+	
 	private class saveOperations implements ActionListener {
 		private JTextField x1;
 		private JTextField y1;
@@ -277,27 +289,95 @@ public class MainGUI extends JFrame implements Runnable {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			manager.setX1(x1.getText());
-			manager.setY1(y1.getText());
-			manager.setX2(x2.getText());
-			manager.setY2(y2.getText());
-			manager.calcTempTraject(true);
-			distanceJLabel.setText("Distance : " + Integer.toString(manager.getDistance()*100) + "m" + "Temps : " + String.valueOf(manager.getTemp()) + "minutes");
-			distanceJLabel.setVisible(true);
-			contentPane.remove(carte);
-			carte = new DisplayMap(map,manager);
-			contentPane.add(carte,BorderLayout.CENTER);
-			carte.revalidate();
-			carte.repaint();
-			contentPane.validate();
-			contentPane.repaint();
-		
+			if((x1.getText()!="")&&(y1.getText()!="")&&(x2.getText()!="")&&(y2.getText()!="")) {
+				start = new Case(Integer.valueOf(x1.getText()),Integer.valueOf(y1.getText()));
+				finish = new Case(Integer.valueOf(x2.getText()),Integer.valueOf(y2.getText()));
+			}
+			manager.setStart(start);
+			manager.setFinish(finish);
+			
+			boolean selectedT = trainBox.isSelected();
+			
+			try {
+		        if (selectedT) {
+		        	manager.calcTempTraject(true);
+		        } else {
+		        	manager.calcTempTraject(false);
+		        }
+				
+				distanceJLabel.setText("Distance : " + Integer.toString(manager.getDistance()*100) + "m" + "    Temps : " + String.valueOf(manager.getTemp()) + "minutes");
+				distanceJLabel.setVisible(true);
+				start = finish = null;
+				finishFieldX.setText("");
+				finishFieldY.setText("");
+				startFieldX.setText("");
+				startFieldY.setText("");
+				startL.clearSelection();
+				endL.clearSelection();
+				contentPane.remove(carte);
+				carte = new DisplayMap(map,manager);
+				contentPane.add(carte,BorderLayout.CENTER);
+				carte.revalidate();
+				carte.repaint();
+				MouseControls mouseControls = new MouseControls();
+				carte.addMouseListener(mouseControls);
+				contentPane.validate();
+				contentPane.repaint();
+				manager.resetStartEnd();
+			} catch (WrongParametersException e1) {
+				System.err.println(e1.getMessage());
+				JOptionPane.showMessageDialog(contentPane, "Erreur selection point de départ/arrivée");
+			}
 		}
 	}
 	
-	private class itineraireOperations implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			MenuGUI menu = new MenuGUI("Menu Itinéraire", manager);
+	private class MouseControls implements MouseListener {
+
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			int x = e.getX();
+			int y = e.getY();
+			System.out.println("non");
+
+			Case position = new Case(y/GPSConfiguration.BLOCK_SIZE,x/GPSConfiguration.BLOCK_SIZE);
+			if(start != null) {
+				finish = position;
+				finishFieldX.setText(Integer.toString(finish.getLigne()));
+				finishFieldY.setText(Integer.toString(finish.getColonne()));
+				System.out.println("finish");
+			}
+			else{
+				start = position;
+				startFieldX.setText(Integer.toString(start.getLigne()));
+				startFieldY.setText(Integer.toString(start.getColonne()));
+				System.out.println("depart");
+			}
+			try {
+				manager.setStartFinishPoint(position);
+			}catch(WrongParametersException e1) {
+				System.err.println(e1.getMessage());
+			}
+			// faire une ligne de commande pour colorier la case sélectionnée
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+
 		}
 	}
 	

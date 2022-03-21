@@ -11,6 +11,10 @@ public class Case {
 	private int colonne;
 	private int ligne;
 	
+	public Case() {
+		
+	}
+	
 	public Case(int colonne, int ligne) {
 		this.num = 0;
 		this.colonne = colonne;
