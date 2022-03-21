@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -23,6 +24,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -74,14 +77,16 @@ public class MainGUI extends JFrame implements Runnable {
 	private JCheckBoxMenuItem trainBox; 
 	private JCheckBoxMenuItem boatBox; 
 	private JMenu tripSubMenu;
-	private JCheckBoxMenuItem shortBox;
-	private JCheckBoxMenuItem longBox;
-	private JCheckBoxMenuItem confortBox;
-	private JCheckBoxMenuItem touristicBox;
+	private JRadioButtonMenuItem shortButton;
+	private JRadioButtonMenuItem longButton;
+	private JRadioButtonMenuItem confortButton;
+	private JRadioButtonMenuItem touristicButton;
+	private ButtonGroup traject;
 	private JButton saveButton;
 	private JLabel distanceJLabel = new JLabel("");
 	private Case start;
 	private Case finish;
+	private boolean selected = true;
 	
 	
 	public MainGUI(String title) {
@@ -163,10 +168,12 @@ menuBar = new JMenuBar();
 		
 		
 		tripSubMenu = new JMenu("Type de trajet");
-		shortBox = new JCheckBoxMenuItem("Plus Court");
-		longBox = new JCheckBoxMenuItem("Plus Rapide");
-		confortBox = new JCheckBoxMenuItem("Plus confortable");
-		touristicBox = new JCheckBoxMenuItem("Trajet touristique");
+		shortButton = new JRadioButtonMenuItem("Plus Court",selected);
+		longButton = new JRadioButtonMenuItem("Plus Rapide");
+		confortButton = new JRadioButtonMenuItem("Plus confortable");
+		touristicButton = new JRadioButtonMenuItem("Trajet touristique");
+		traject = new ButtonGroup();
+		
 		
 		
 		saveButton = new JButton("Enregistrer");
@@ -187,10 +194,16 @@ menuBar = new JMenuBar();
 		transportSubMenu.add(boatBox);
 		itineraireMenu.add(transportSubMenu);
 		
-		tripSubMenu.add(shortBox);
-		tripSubMenu.add(longBox);
-		tripSubMenu.add(confortBox);
-		tripSubMenu.add(touristicBox);
+		traject.add(shortButton);
+		traject.add(longButton);
+		traject.add(confortButton);
+		traject.add(touristicButton);
+		tripSubMenu.add(shortButton);
+		tripSubMenu.add(longButton);
+		tripSubMenu.add(confortButton);
+		tripSubMenu.add(touristicButton);
+		
+		
 		itineraireMenu.add(tripSubMenu);
 		
 		itineraireMenu.addSeparator();
@@ -297,13 +310,25 @@ menuBar = new JMenuBar();
 			manager.setFinish(finish);
 			
 			boolean selectedT = trainBox.isSelected();
+			boolean selectedTC = shortButton.isSelected();
+			boolean selectedTR = longButton.isSelected();
 			
 			try {
-		        if (selectedT) {
-		        	manager.calcTempTraject(true);
-		        } else {
-		        	manager.calcTempTraject(false);
-		        }
+		        
+				if(selectedTC) {
+					if (selectedT) {
+			        	manager.calcLowerTraject(true);
+			        } else {
+			        	manager.calcLowerTraject(false);
+			        }
+				}
+				if(selectedTR) {
+					if (selectedT) {
+			        	manager.calcTempTraject(true);
+			        } else {
+			        	manager.calcTempTraject(false);
+			        }
+				}
 				
 				distanceJLabel.setText("Distance : " + Integer.toString(manager.getDistance()*100) + "m" + "    Temps : " + String.valueOf(manager.getTemp()) + "minutes");
 				distanceJLabel.setVisible(true);
